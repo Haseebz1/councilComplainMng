@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complaint Management System</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Local Council Complaint Management System</h1>
+    
+    <!-- Complaint Submission Section -->
+    <div>
+        <textarea id="user-complaint" placeholder="Describe your complaint here..."></textarea>
+        <button onclick="submitComplaint()">Submit Complaint</button>
+    </div>
+    <div id="complaint-response"></div>
+
+    <!-- Complaints List Section -->
+    <div id="complaints-list">
+        <h2>All Complaints:</h2>
+        <button onclick="getComplaints()">Refresh Complaints</button>
+        <div id="complaints"></div>
+    </div>
+
+    <script>
+        function submitComplaint() {
+            const complaint = $('#user-complaint').val();
+            if (complaint.trim() === '') {
+                alert('Please enter a complaint.');
+                return;
+            }
+
+            $.ajax({
+                url: '/submit_complaint',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ complaint: complaint }),
+                success: function(response) {
+                    $('#complaint-response').html('<b>Complaint Submitted:</b> Category - ' + response.category);
+                    $('#user-complaint').val('');
+                },
+                error: function(err) {
+                    alert('Error: ' + err.responseJSON.error);
+                }
+            });
+        }
+
+        function getComplaints() {
+            $.ajax({
+                url: '/complaints',
+                method: 'GET',
+                success: function(response) {
+                    let complaintsHtml = '';
+                    response.complaints.forEach(function(complaint, index) {
+                        complaintsHtml += '<div><b>Complaint ' + (index + 1) + ':</b> ' + complaint.complaint + ' <br> <b>Category:</b> ' + complaint.category + '</div><hr>';
+                    });
+                    $('#complaints').html(complaintsHtml);
+                },
+                error: function(err) {
+                    alert('Error: ' + err.responseJSON.error);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
